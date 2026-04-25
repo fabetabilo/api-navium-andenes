@@ -41,17 +41,51 @@ public class AndenController {
     @GetMapping
     public ResponseEntity<List<Anden>> obtenerTodos() {
 
-        return ResponseEntity.ok(andenService.obtenerTodosAndenes());
+        return ResponseEntity.ok(andenService.obtenerAndenes());
+    }
+    
+    /**
+     * Obtiene todos los andenes por zona
+     */
+    @GetMapping("/zona/{zona}")
+    public ResponseEntity<List<Anden>> obtenerPorZona(@PathVariable String zona) {
+        
+        return ResponseEntity.ok(andenService.obtenerPorZona(zona));
+    }
+    
+    /**
+     * Obtiene un Anden por codigo compuesto (zona + numero)
+     */
+    @GetMapping("/codigo/{codigo}")
+    public ResponseEntity<Anden> obtenerPorCodigo(@PathVariable String codigo) {
+        return ResponseEntity.ok(andenService.obtenerPorCodigo(codigo));
     }
     
     /**
      * Obtiene todos los andenes con estado DISPONIBLE
-     * TEMPORAL!! mas adelante, diferir por ESTADO
      */
     @GetMapping("/disponibles")
     public ResponseEntity<List<Anden>> obtenerDisponibles() {
         
         return ResponseEntity.ok(andenService.obtenerAndenesDisponibles());
+    }
+
+    /**
+     * Obtiene todos los andenes de estado OCUPADO
+     */
+    @GetMapping("/ocupados")
+    public ResponseEntity<List<Anden>> obtenerOcupados() {
+        
+        return ResponseEntity.ok(andenService.obtenerAndenesOcupados());
+    }
+
+    /**
+     * Obtiene todos los andenes en estado MANTENIMIENTO
+     */
+    @GetMapping("/mantenimiento")
+    public ResponseEntity<List<Anden>> obtenerEnMantenimiento() {
+        
+        return ResponseEntity.ok(andenService.obtenerAndenesMantenimiento());
     }
 
     /**
@@ -90,6 +124,24 @@ public class AndenController {
         Asignacion asignacion = andenService.asignarAnden(id, patente, contenedorId);
         
         return ResponseEntity.ok(asignacion);
+    }
+    
+    /**
+     * Marca a Anden en estado de mantenimiento
+     */
+    @PostMapping("/{id}/mantenimiento")
+    public ResponseEntity<Anden> marcarAndenEnMantenimiento(@PathVariable Long id) {
+        Anden anden = andenService.marcarAndenEnMantenimiento(id);
+        return ResponseEntity.ok(anden);
+    }
+    
+    /**
+     * Habilita a un Anden que esta en mantenimiento
+     */
+    @PostMapping("/{id}/habilitar")
+    public ResponseEntity<Anden> habilitarAnden(@PathVariable Long id) {
+        Anden anden = andenService.habilitarAnden(id);
+        return ResponseEntity.ok(anden);
     }
     
     /**

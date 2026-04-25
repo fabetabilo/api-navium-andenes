@@ -32,8 +32,22 @@ public class AndenService {
     }
     
     @Transactional(readOnly = true)
-    public List<Anden> obtenerTodosAndenes() {
+    public List<Anden> obtenerAndenes() {
         return andenRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Anden> obtenerPorZona(String zona) {
+        return andenRepository.findByZona(zona.toUpperCase());
+    }
+    
+    /**
+     * Obtiene un Anden por codigo compuesto: zona + numero
+     */
+    @Transactional(readOnly = true)
+    public Anden obtenerPorCodigo(String codigo) {
+    return andenRepository.findByCodigo(codigo.toUpperCase())
+                          .orElseThrow(() -> new RuntimeException("Anden CODIGO: " + codigo + " no encontrado"));
     }
     
     @Transactional(readOnly = true)
@@ -41,8 +55,47 @@ public class AndenService {
         return andenRepository.findByEstado(EstadoAnden.DISPONIBLE);
     }
 
-    // To do: metodos obtener por zona, codigo [...]
+    @Transactional(readOnly = true)
+    public List<Anden> obtenerAndenesOcupados() {
+        return andenRepository.findByEstado(EstadoAnden.OCUPADO);
+    }
 
+    @Transactional(readOnly = true)
+    public List<Anden> obtenerAndenesMantenimiento() {
+        return andenRepository.findByEstado(EstadoAnden.MANTENIMIENTO);
+    }
+    
+    /**
+     * Marca a un Anden en estado MANTENIMIENTO.
+     * REGLA: Un anden con stado OCUPADO no puede marcarse en MANTENIMIENTO
+     * @param id Anden a marcar como en MANTENIMIENTO
+     */
+    @Transactional
+    public Anden marcarAndenEnMantenimiento(Long id) {
+        Anden anden = obtenerAndenPorId(id);
+        if (anden.getEstado() == EstadoAnden.OCUPADO) {
+            throw new RuntimeException("No se puede colocar en mantenimiento un anden ocupado");
+        }
+        anden.setEstado(EstadoAnden.MANTENIMIENTO);
+        
+        return andenRepository.save(anden);
+    }
+    
+    /**
+     * Habilita un Anden en mantenimiento. Cambia su estado de MANTENIMIENTO a DISPONIBLE
+     * @param id Anden a habilitar
+     */
+    @Transactional
+    public Anden habilitarAnden(Long id) {
+        Anden anden = obtenerAndenPorId(id);
+        if (anden.getEstado() != EstadoAnden.MANTENIMIENTO) {
+            throw new RuntimeException("El anden no se encuentra en mantenimiento");
+        }
+        anden.setEstado(EstadoAnden.DISPONIBLE);
+        
+        return andenRepository.save(anden);
+    }
+    
     /**
      * Crea una asignacion respecto a un anden, transporte y contenedor.
      * @param andenId Anden a asignar
