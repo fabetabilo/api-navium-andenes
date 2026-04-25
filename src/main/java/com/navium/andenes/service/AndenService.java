@@ -32,6 +32,11 @@ public class AndenService {
     }
     
     @Transactional(readOnly = true)
+    public List<Anden> obtenerTodosAndenes() {
+        return andenRepository.findAll();
+    }
+    
+    @Transactional(readOnly = true)
     public List<Anden> obtenerAndenesDisponibles() {
         return andenRepository.findByEstado(EstadoAnden.DISPONIBLE);
     }
