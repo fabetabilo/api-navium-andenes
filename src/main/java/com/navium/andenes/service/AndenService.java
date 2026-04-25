@@ -32,6 +32,11 @@ public class AndenService {
     }
     
     @Transactional(readOnly = true)
+    public List<Anden> obtenerTodosAndenes() {
+        return andenRepository.findAll();
+    }
+    
+    @Transactional(readOnly = true)
     public List<Anden> obtenerAndenesDisponibles() {
         return andenRepository.findByEstado(EstadoAnden.DISPONIBLE);
     }
@@ -81,7 +86,7 @@ public class AndenService {
             throw new IllegalStateException("Anden disponible");
         }
         
-        Asignacion asignacion = asignacionRepository.findByAndenIdHoraFinIsNull(andenId)
+        Asignacion asignacion = asignacionRepository.findByAndenIdAndHoraFinIsNull(andenId)
                                                     .orElseThrow(() -> new RuntimeException("No existe asignacion activa para Anden: " + andenId));
         
         // cerrar asignacion
