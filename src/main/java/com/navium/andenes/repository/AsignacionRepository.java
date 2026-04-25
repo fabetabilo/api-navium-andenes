@@ -12,7 +12,7 @@ import com.navium.andenes.model.Asignacion;
 public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
 
     // obbtiene asignacion activa de un anden
-    Optional<Asignacion> findByAndenIdHoraFinIsNull(Long andenId);
+    Optional<Asignacion> findByAndenIdAndHoraFinIsNull(Long andenId);
 
     List<Asignacion> findByAndenId(Long andenId);
 

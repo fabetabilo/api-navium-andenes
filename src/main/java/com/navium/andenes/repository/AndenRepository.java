@@ -18,6 +18,6 @@ public interface AndenRepository extends JpaRepository<Anden, Long> {
     
     List<Anden> findByZona(String zona);
     
-    Optional<Anden> findByZonaNumero(String zona, int numero);
+    Optional<Anden> findByZonaAndNumero(String zona, int numero);
     
 }

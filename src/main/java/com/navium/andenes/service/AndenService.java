@@ -86,7 +86,7 @@ public class AndenService {
             throw new IllegalStateException("Anden disponible");
         }
         
-        Asignacion asignacion = asignacionRepository.findByAndenIdHoraFinIsNull(andenId)
+        Asignacion asignacion = asignacionRepository.findByAndenIdAndHoraFinIsNull(andenId)
                                                     .orElseThrow(() -> new RuntimeException("No existe asignacion activa para Anden: " + andenId));
         
         // cerrar asignacion
