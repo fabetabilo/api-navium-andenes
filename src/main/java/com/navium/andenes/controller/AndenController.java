@@ -31,8 +31,13 @@ public class AndenController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Anden> obtenerPorId(@PathVariable Long id) {
-        
-        return ResponseEntity.ok(andenService.obtenerAndenPorId(id));
+        try {
+            Anden anden = this.andenService.obtenerAndenPorId(id);
+            return ResponseEntity.ok(anden);
+            
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
     
     /**
@@ -40,18 +45,74 @@ public class AndenController {
      */
     @GetMapping
     public ResponseEntity<List<Anden>> obtenerTodos() {
+        List<Anden> andenes = this.andenService.obtenerAndenes();
+        if (andenes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+            
+        }
+        return ResponseEntity.ok(andenes);
+    }
+    
+    /**
+     * Obtiene todos los andenes por zona
+     */
+    @GetMapping("/zona/{zona}")
+    public ResponseEntity<List<Anden>> obtenerPorZona(@PathVariable String zona) {
+        List<Anden> andenes = this.andenService.obtenerPorZona(zona);
+        if (andenes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(andenes);
+    }
+    
+    /**
+     * Obtiene un Anden por codigo compuesto (zona + numero)
+     */
+    @GetMapping("/codigo/{codigo}")
+    public ResponseEntity<Anden> obtenerPorCodigo(@PathVariable String codigo) {
+        try {
+            Anden anden = this.andenService.obtenerPorCodigo(codigo);
+            return ResponseEntity.ok(anden);
 
-        return ResponseEntity.ok(andenService.obtenerTodosAndenes());
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
     
     /**
      * Obtiene todos los andenes con estado DISPONIBLE
-     * TEMPORAL!! mas adelante, diferir por ESTADO
      */
     @GetMapping("/disponibles")
     public ResponseEntity<List<Anden>> obtenerDisponibles() {
-        
-        return ResponseEntity.ok(andenService.obtenerAndenesDisponibles());
+        List<Anden> andenes = this.andenService.obtenerAndenesDisponibles();
+        if (andenes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(andenes);
+    }
+
+    /**
+     * Obtiene todos los andenes de estado OCUPADO
+     */
+    @GetMapping("/ocupados")
+    public ResponseEntity<List<Anden>> obtenerOcupados() {
+        List<Anden> andenes = this.andenService.obtenerAndenesOcupados();
+        if (andenes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(andenes);
+    }
+
+    /**
+     * Obtiene todos los andenes en estado MANTENIMIENTO
+     */
+    @GetMapping("/mantenimiento")
+    public ResponseEntity<List<Anden>> obtenerEnMantenimiento() {
+        List<Anden> andenes = this.andenService.obtenerAndenesMantenimiento();
+        if (andenes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(andenes);
     }
 
     /**
@@ -73,9 +134,19 @@ public class AndenController {
      * Eliminar un Anden
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        andenService.eliminarAnden(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<String> eliminarAnden(@PathVariable Long id) {
+        try {
+            this.andenService.eliminarAnden(id);
+            return ResponseEntity.noContent().build();
+
+        } catch (RuntimeException e) {
+            // servicio: "Anden no encontrado"
+            if (e.getMessage().contains("no encontrado")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+            // servicio: lanza la validacion de OCUPADO
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
     
     
@@ -87,9 +158,41 @@ public class AndenController {
      */
     @PostMapping("/{id}/asignar")
     public ResponseEntity<Asignacion> asignarAnden(@PathVariable Long id, @RequestParam String patente, @RequestParam Long contenedorId) {
-        Asignacion asignacion = andenService.asignarAnden(id, patente, contenedorId);
-        
-        return ResponseEntity.ok(asignacion);
+        try {
+            Asignacion asignacion = andenService.asignarAnden(id, patente, contenedorId);
+            return ResponseEntity.ok(asignacion);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+    
+    /**
+     * Marca a Anden en estado de mantenimiento
+     */
+    @PostMapping("/{id}/mantenimiento")
+    public ResponseEntity<Anden> marcarAndenEnMantenimiento(@PathVariable Long id) {
+        try {
+            Anden anden = andenService.marcarAndenEnMantenimiento(id);
+            return ResponseEntity.ok(anden);
+
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    /**
+     * Habilita a un Anden que esta en mantenimiento
+     */
+    @PostMapping("/{id}/habilitar")
+    public ResponseEntity<Anden> habilitarAnden(@PathVariable Long id) {
+        try {
+            Anden anden = andenService.habilitarAnden(id);
+            return ResponseEntity.ok(anden);
+
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
     
     /**
@@ -97,8 +200,12 @@ public class AndenController {
      */
     @PostMapping("/{id}/liberar")
     public ResponseEntity<Void> liberarAnden(@PathVariable Long id) {
-        andenService.liberarAnden(id);
+        try {
+            andenService.liberarAnden(id);
+            return ResponseEntity.noContent().build();
 
-        return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
