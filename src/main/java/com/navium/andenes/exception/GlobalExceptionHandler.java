@@ -1,7 +1,7 @@
 package com.navium.andenes.exception;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,30 +23,33 @@ public class GlobalExceptionHandler {
 	private static final String MENSAJE_INTERNAL = "Error interno del servidor";
     
 	@ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
-	public ResponseEntity<Map<String, Object>> manejarErroresValidacion(RuntimeException ex) {
-		return new ResponseEntity<>(crearRespuesta(ESTADO_VALIDACION, MENSAJE_VALIDACION), HttpStatus.BAD_REQUEST);
+	public ResponseEntity<ErrorResponse> manejarErroresValidacion(RuntimeException ex) {
+		return build(HttpStatus.BAD_REQUEST, ESTADO_VALIDACION, MENSAJE_VALIDACION, ex.getMessage());
 	}
     
 	@ExceptionHandler(NotFoundException.class)
-	public ResponseEntity<Map<String, Object>> manejarNotFound(NotFoundException ex) {
-		return new ResponseEntity<>(crearRespuesta(ESTADO_NOT_FOUND, MENSAJE_NOT_FOUND), HttpStatus.NOT_FOUND);
+	public ResponseEntity<ErrorResponse> manejarNotFound(NotFoundException ex) {
+		return build(HttpStatus.NOT_FOUND, ESTADO_NOT_FOUND, MENSAJE_NOT_FOUND, ex.getMessage());
 	}
     
 	@ExceptionHandler(RuntimeException.class)
-	public ResponseEntity<Map<String, Object>> manejarRuntime(RuntimeException ex) {
-		return new ResponseEntity<>(crearRespuesta(ESTADO_VALIDACION, MENSAJE_VALIDACION), HttpStatus.BAD_REQUEST);
+	public ResponseEntity<ErrorResponse> manejarRuntime(RuntimeException ex) {
+		return build(HttpStatus.BAD_REQUEST, ESTADO_VALIDACION, MENSAJE_VALIDACION, ex.getMessage());
 	}
     
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<Map<String, Object>> manejarGeneric(Exception ex) {
-		return new ResponseEntity<>(crearRespuesta(ESTADO_INTERNAL, MENSAJE_INTERNAL), HttpStatus.INTERNAL_SERVER_ERROR);
+	public ResponseEntity<ErrorResponse> manejarGeneric(Exception ex) {
+		return build(HttpStatus.INTERNAL_SERVER_ERROR, ESTADO_INTERNAL, MENSAJE_INTERNAL, null);
 	}
-    
-    /** Respuesta reutilizable */
-	private Map<String, Object> crearRespuesta(String estado, String mensaje) {
-		Map<String, Object> respuesta = new HashMap<>();
-		respuesta.put("estado", estado);
-		respuesta.put("mensaje", mensaje);
-		return respuesta;
+
+	private ResponseEntity<ErrorResponse> build(HttpStatus status, String estado, String mensaje, String detalle) {
+		ErrorResponse body = ErrorResponse.builder()
+			.estado(estado)
+			.mensaje(mensaje)
+			.status(status.value())
+			.timestamp(OffsetDateTime.now(ZoneOffset.UTC))
+			.detalle(detalle)
+			.build();
+		return new ResponseEntity<>(body, status);
 	}
 }
