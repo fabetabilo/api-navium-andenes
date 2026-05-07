@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.navium.andenes.exception.NotFoundException;
 import com.navium.andenes.model.Anden;
 import com.navium.andenes.model.Asignacion;
 import com.navium.andenes.model.EstadoAnden;
@@ -29,7 +30,7 @@ public class AndenService {
     public Anden obtenerAndenPorId(Long id) {
         validarId(id, "AndenId");
         return andenRepository.findById(id)
-                              .orElseThrow(() -> new RuntimeException("Anden no encontrado"));
+                              .orElseThrow(() -> new NotFoundException("Anden no encontrado"));
     }
     
     @Transactional(readOnly = true)
@@ -48,7 +49,7 @@ public class AndenService {
     @Transactional(readOnly = true)
     public Anden obtenerPorCodigo(String codigo) {
     return andenRepository.findByCodigo(codigo.toUpperCase())
-                          .orElseThrow(() -> new RuntimeException("Anden CODIGO: " + codigo + " no encontrado"));
+                          .orElseThrow(() -> new NotFoundException("Anden CODIGO: " + codigo + " no encontrado"));
     }
     
     @Transactional(readOnly = true)
@@ -114,7 +115,7 @@ public class AndenService {
         validarId(contenedorId, "ContenedorId");
         
         Anden anden = andenRepository.findById(andenId)
-                                     .orElseThrow(() -> new RuntimeException("Anden no encontrado"));
+                                     .orElseThrow(() -> new NotFoundException("Anden no encontrado"));
         
         if (anden.getEstado() != EstadoAnden.DISPONIBLE) {
             throw new IllegalStateException("Anden no disponible");
@@ -140,7 +141,7 @@ public class AndenService {
     @Transactional
     public void liberarAnden(Long andenId) {
         validarId(andenId, "AndenId");
-        Anden anden = andenRepository.findById(andenId).orElseThrow(() -> new RuntimeException("Anden no encontrado"));
+        Anden anden = andenRepository.findById(andenId).orElseThrow(() -> new NotFoundException("Anden no encontrado"));
         
         if (anden.getEstado() == EstadoAnden.DISPONIBLE) {
             throw new IllegalStateException("Anden ya esta disponible");
@@ -150,7 +151,7 @@ public class AndenService {
         }
 
         Asignacion asignacion = asignacionRepository.findByAndenIdAndHoraFinIsNull(andenId)
-                                                    .orElseThrow(() -> new RuntimeException("No existe asignacion activa para Anden: " + andenId));
+                                                    .orElseThrow(() -> new NotFoundException("No existe asignacion activa para Anden: " + andenId));
         
         // cerrar asignacion
         asignacion.setHoraFin(LocalDateTime.now());
@@ -196,7 +197,7 @@ public class AndenService {
     @Transactional
     public void eliminarAnden(Long id) {
         if (!andenRepository.existsById(id)) {
-            throw new RuntimeException("Anden no encontrado para eliminar");
+            throw new NotFoundException("Anden no encontrado para eliminar");
         }
         // validar que no este ocupado antes de borrar
         Anden anden = obtenerAndenPorId(id);
