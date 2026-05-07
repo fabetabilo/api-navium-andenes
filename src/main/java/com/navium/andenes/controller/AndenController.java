@@ -2,7 +2,6 @@ package com.navium.andenes.controller;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,13 +30,8 @@ public class AndenController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Anden> obtenerPorId(@PathVariable Long id) {
-        try {
-            Anden anden = this.andenService.obtenerAndenPorId(id);
-            return ResponseEntity.ok(anden);
-            
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        Anden anden = this.andenService.obtenerAndenPorId(id);
+        return ResponseEntity.ok(anden);
     }
     
     /**
@@ -70,13 +64,8 @@ public class AndenController {
      */
     @GetMapping("/codigo/{codigo}")
     public ResponseEntity<Anden> obtenerPorCodigo(@PathVariable String codigo) {
-        try {
-            Anden anden = this.andenService.obtenerPorCodigo(codigo);
-            return ResponseEntity.ok(anden);
-
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        Anden anden = this.andenService.obtenerPorCodigo(codigo);
+        return ResponseEntity.ok(anden);
     }
     
     /**
@@ -120,33 +109,17 @@ public class AndenController {
      */
     @PostMapping
     public ResponseEntity<Anden> crearAnden(@RequestBody Anden anden) {
-        try {
-            Anden adn = this.andenService.crearAnden(anden);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(adn);
-            
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
+        Anden adn = this.andenService.crearAnden(anden);
+        return ResponseEntity.status(201).body(adn);
     }
     
     /**
      * Eliminar un Anden
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminarAnden(@PathVariable Long id) {
-        try {
-            this.andenService.eliminarAnden(id);
-            return ResponseEntity.noContent().build();
-
-        } catch (RuntimeException e) {
-            // servicio: "Anden no encontrado"
-            if (e.getMessage().contains("no encontrado")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-            }
-            // servicio: lanza la validacion de OCUPADO
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<Void> eliminarAnden(@PathVariable Long id) {
+        this.andenService.eliminarAnden(id);
+        return ResponseEntity.noContent().build();
     }
     
     
@@ -158,13 +131,8 @@ public class AndenController {
      */
     @PostMapping("/{id}/asignar")
     public ResponseEntity<Asignacion> asignarAnden(@PathVariable Long id, @RequestParam String patente, @RequestParam Long contenedorId) {
-        try {
-            Asignacion asignacion = andenService.asignarAnden(id, patente, contenedorId);
-            return ResponseEntity.ok(asignacion);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
+        Asignacion asignacion = andenService.asignarAnden(id, patente, contenedorId);
+        return ResponseEntity.ok(asignacion);
     }
     
     /**
@@ -172,13 +140,8 @@ public class AndenController {
      */
     @PostMapping("/{id}/mantenimiento")
     public ResponseEntity<Anden> marcarAndenEnMantenimiento(@PathVariable Long id) {
-        try {
-            Anden anden = andenService.marcarAndenEnMantenimiento(id);
-            return ResponseEntity.ok(anden);
-
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        Anden anden = andenService.marcarAndenEnMantenimiento(id);
+        return ResponseEntity.ok(anden);
     }
     
     /**
@@ -186,13 +149,8 @@ public class AndenController {
      */
     @PostMapping("/{id}/habilitar")
     public ResponseEntity<Anden> habilitarAnden(@PathVariable Long id) {
-        try {
-            Anden anden = andenService.habilitarAnden(id);
-            return ResponseEntity.ok(anden);
-
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        Anden anden = andenService.habilitarAnden(id);
+        return ResponseEntity.ok(anden);
     }
     
     /**
@@ -200,12 +158,7 @@ public class AndenController {
      */
     @PostMapping("/{id}/liberar")
     public ResponseEntity<Void> liberarAnden(@PathVariable Long id) {
-        try {
-            andenService.liberarAnden(id);
-            return ResponseEntity.noContent().build();
-
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        andenService.liberarAnden(id);
+        return ResponseEntity.noContent().build();
     }
 }
