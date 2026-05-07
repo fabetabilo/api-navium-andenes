@@ -23,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.navium.andenes.exception.GlobalExceptionHandler;
+import com.navium.andenes.exception.NotFoundException;
 import com.navium.andenes.model.Anden;
 import com.navium.andenes.model.Asignacion;
 import com.navium.andenes.model.EstadoAnden;
@@ -44,7 +46,9 @@ class AndenControllerTest {
 
 	@BeforeEach
 	void setUp() {
-		mockMvc = MockMvcBuilders.standaloneSetup(andenController).build();
+		mockMvc = MockMvcBuilders.standaloneSetup(andenController)
+			.setControllerAdvice(new GlobalExceptionHandler())
+			.build();
 	}
 
 	@Test
@@ -57,6 +61,17 @@ class AndenControllerTest {
 			.andExpect(jsonPath("$.id").value(1L))
 			.andExpect(jsonPath("$.zona").value("A"))
 			.andExpect(jsonPath("$.numero").value(1));
+	}
+
+	@Test
+	void obtenerPorId_notFound_mapsTo404() throws Exception {
+		when(andenService.obtenerAndenPorId(404L))
+			.thenThrow(new NotFoundException("Anden no encontrado"));
+
+		mockMvc.perform(get("/api/v0/andenes/404"))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.estado").value("NOT_FOUND"))
+			.andExpect(jsonPath("$.mensaje").value("Recurso no encontrado"));
 	}
 
 	@Test
@@ -105,6 +120,20 @@ class AndenControllerTest {
 		mockMvc.perform(get("/api/v0/andenes/codigo/B3"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.id").value(3L));
+	}
+
+	@Test
+	void crearAnden_validationError_mapsTo400() throws Exception {
+		Anden request = buildAnden(null, " ", 0, EstadoAnden.DISPONIBLE);
+		when(andenService.crearAnden(any(Anden.class)))
+			.thenThrow(new IllegalArgumentException("Zona no puede ser vacio"));
+
+		mockMvc.perform(post("/api/v0/andenes")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.estado").value("ERROR_DE_VALIDACION"))
+			.andExpect(jsonPath("$.mensaje").value("Error en la solicitud"));
 	}
 
 	@Test
@@ -183,6 +212,17 @@ class AndenControllerTest {
 			.andExpect(status().isNoContent());
 
 		verify(andenService).eliminarAnden(8L);
+	}
+
+	@Test
+	void eliminarAnden_runtimeError_mapsTo400() throws Exception {
+		org.mockito.Mockito.doThrow(new RuntimeException("Anden esta OCUPADO"))
+			.when(andenService).eliminarAnden(99L);
+
+		mockMvc.perform(delete("/api/v0/andenes/99"))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.estado").value("ERROR_DE_VALIDACION"))
+			.andExpect(jsonPath("$.mensaje").value("Error en la solicitud"));
 	}
 
 	@Test
