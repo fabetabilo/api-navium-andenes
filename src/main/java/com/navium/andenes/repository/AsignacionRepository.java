@@ -16,4 +16,10 @@ public interface AsignacionRepository extends JpaRepository<Asignacion, Long> {
 
     List<Asignacion> findByAndenId(Long andenId);
 
+    /**
+     * Obtiene las asignaciones para una lista de andenIds.
+     * Se utiliza para andenes ocupados que tienen asignación activa.
+     */
+    List<Asignacion> findByAndenIdIn(List<Long> andenIds);
+
 }

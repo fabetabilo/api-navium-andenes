@@ -2,9 +2,13 @@ package com.navium.andenes.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.navium.andenes.dto.AndenInformacion;
 import com.navium.andenes.exception.NotFoundException;
 import com.navium.andenes.model.Anden;
 import com.navium.andenes.model.Asignacion;
@@ -67,6 +71,80 @@ public class AndenService {
         return andenRepository.findByEstado(EstadoAnden.MANTENIMIENTO);
     }
     
+    /**
+     * Obtiene un Anden con su asignacion
+     */
+    @Transactional(readOnly = true)
+    public AndenInformacion obtenerAndenConAsignacion(Long id) {
+        Anden anden = obtenerAndenPorId(id);
+
+        Optional<Asignacion> asignacionOpt = asignacionRepository.findByAndenIdAndHoraFinIsNull(id);
+
+        return new AndenInformacion(
+            anden.getCodigo(),
+            anden.getTipo().name(),
+            anden.getEstado().name(),
+            asignacionOpt.map(Asignacion::getId).orElse(null),
+            asignacionOpt.map(Asignacion::getPatenteTransporte).orElse(null),
+            asignacionOpt.map(Asignacion::getContenedorId).orElse(null),
+            asignacionOpt.map(Asignacion::getHoraInicio).orElse(null),
+            asignacionOpt.map(Asignacion::getHoraFin).orElse(null)
+        );
+    }
+
+    /**
+     * Obtiene todos los andenes ocupados con su asignacion activa
+     * 
+     * Obteniene unicamente andenes en estado OCUPADO (aquellos que tienen una asignacion activa) 
+     * y realiza una sola consulta batch para obtener todas las asignaciones correspondientes, 
+     * evitando el problema N+1
+     * 
+     * >>si me acuerdo, hacer indices en la base de datos<<
+     * 
+     * @return Lista de andenes ocupados con su informacion de asignaciin
+     */
+    @Transactional(readOnly = true)
+    public List<AndenInformacion> obtenerAndenesOcupadosConAsignacion() {
+        // si esta ocupado, tiene asignacion
+        List<Anden> andenesOcupados = andenRepository.findByEstado(EstadoAnden.OCUPADO);
+        
+        if (andenesOcupados.isEmpty()) {
+            return List.of();
+        }
+        
+        List<Long> andenIds = andenesOcupados.stream()
+                .map(Anden::getId)
+                .toList();
+        
+        // obtiene todas las asignaciones en una sola query batch evitando N+1
+        List<Asignacion> asignaciones = asignacionRepository.findByAndenIdIn(andenIds);
+        
+        // toma la asignacion mas reciente por horaInicio y mapea
+        Map<Long, Asignacion> asignacionPorAndenId = asignaciones.stream()
+                .filter(a -> a.getHoraInicio() != null)
+                .collect(Collectors.toMap(
+                        Asignacion::getAndenId,
+                        asignacion -> asignacion,
+                        (existing, replacement) -> existing.getHoraInicio().isAfter(replacement.getHoraInicio()) ? existing : replacement
+                ));
+        
+        return andenesOcupados.stream()
+                .map(anden -> {
+                    Asignacion asignacion = asignacionPorAndenId.get(anden.getId());
+                    return new AndenInformacion(
+                        anden.getCodigo(),
+                        anden.getTipo().name(),
+                        anden.getEstado().name(),
+                        asignacion != null ? asignacion.getId() : null,
+                        asignacion != null ? asignacion.getPatenteTransporte() : null,
+                        asignacion != null ? asignacion.getContenedorId() : null,
+                        asignacion != null ? asignacion.getHoraInicio() : null,
+                        asignacion != null ? asignacion.getHoraFin() : null
+                    );
+                })
+                .toList();
+    }
+
     // TODO: Obtener andenes por zona + estado
     
     /**
@@ -135,7 +213,18 @@ public class AndenService {
     }
     
     /**
-     * Libera un anden de su asignacion
+     * Libera un anden de su asignacion.
+     * 
+     * El cierra la asignacion activa del anden estableciendo {@code horaFin}
+     * con la fecha y hora actual, y cambia el estado del Anden a DISPONIBLE
+     * 
+     * REGLAS:
+     * El anden no puede estar ya en estado DISPONIBLE</li>
+     * El anden no puede estar en estado MANTENIMIENTO (usar {@link #habilitarAnden(Long)})</li>
+     * Debe existir una asignacion activa (horaFin null) para el Anden
+     * 
+     * (queda pendiente y sujeta a cambios la logica)
+     * 
      * @param andenId Anden a liberar
      */
     @Transactional
