@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.navium.andenes.dto.AndenInformacion;
 import com.navium.andenes.model.Anden;
 import com.navium.andenes.model.Asignacion;
 import com.navium.andenes.exception.ErrorResponse;
@@ -55,6 +56,44 @@ public class AndenController {
     public ResponseEntity<Anden> obtenerPorId(@Parameter(description = "Id del anden", example = "1") @PathVariable Long id) {
         Anden anden = this.andenService.obtenerAndenPorId(id);
         return ResponseEntity.ok(anden);
+    }
+
+    /**
+     * Obtiene un Anden con asignacion activa
+     */
+    @GetMapping("/{id}/asignacion")
+    @Operation(summary = "Obtener anden con asignación actual")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Anden con asignación encontrado",
+            content = @Content(schema = @Schema(implementation = AndenInformacion.class))),
+        @ApiResponse(responseCode = "400", description = "Solicitud invalida",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Anden no encontrado",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "500", description = "Error interno",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<AndenInformacion> obtenerAndenConAsignacionActual(@Parameter(description = "Id del anden", example = "1") @PathVariable Long id) {
+        AndenInformacion informacion = andenService.obtenerAndenConAsignacion(id);
+        return ResponseEntity.ok(informacion);
+    }
+
+    /**
+     * Obtiene todos los andenes ocupados con su asignación activa
+     */
+    @GetMapping("/asignacion")
+    @Operation(summary = "Listar andenes ocupados con asignación")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Listado de andenes ocupados con asignación",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = AndenInformacion.class)))),
+        @ApiResponse(responseCode = "204", description = "Sin contenido")
+    })
+    public ResponseEntity<List<AndenInformacion>> obtenerOcupadosConAsignacion() {
+        List<AndenInformacion> andenes = andenService.obtenerAndenesOcupadosConAsignacion();
+        if (andenes.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(andenes);
     }
     
     /**
@@ -269,7 +308,7 @@ public class AndenController {
     }
     
     /**
-     * Libera un Anden
+     * Libera un Anden de su asignacion de anden
      */
     @PostMapping("/{id}/liberar")
     @Operation(summary = "Liberar anden")

@@ -36,6 +36,10 @@ public class SecurityAuthorizationConfig {
             // Operaciones de lectura (GET) - ROL_OPERADOR y ROL_CENTRO_MANDO
             auth.requestMatchers(HttpMethod.GET, "/api/v0/andenes/{id}")
                 .hasAnyAuthority("ROL_OPERADOR", "ROL_CENTRO_MANDO");
+            auth.requestMatchers(HttpMethod.GET, "/api/v0/andenes/{id}/asignacion")
+                .hasAnyAuthority("ROL_OPERADOR", "ROL_CENTRO_MANDO");
+            auth.requestMatchers(HttpMethod.GET, "/api/v0/andenes/asignacion")
+                .hasAnyAuthority("ROL_OPERADOR", "ROL_CENTRO_MANDO");
             auth.requestMatchers(HttpMethod.GET, "/api/v0/andenes")
                 .hasAnyAuthority("ROL_OPERADOR", "ROL_CENTRO_MANDO");
             auth.requestMatchers(HttpMethod.GET, "/api/v0/andenes/zona/{zona}")
