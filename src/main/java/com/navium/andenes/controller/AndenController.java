@@ -33,7 +33,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v0/andenes")
 @RequiredArgsConstructor
 @Tag(name = "Andenes", description = "Operaciones CRUD y de negocio sobre andenes")
-@SecurityRequirement(name = "bearerAuth")
 public class AndenController {
     
     private final AndenService andenService;
