@@ -16,10 +16,12 @@ public class GlobalExceptionHandler {
     
 	private static final String ESTADO_VALIDACION = "ERROR_DE_VALIDACION";
 	private static final String ESTADO_NOT_FOUND = "NOT_FOUND";
+	private static final String ESTADO_CONFLICTO = "CONFLICTO";
 	private static final String ESTADO_INTERNAL = "ERROR_INTERNO";
     
 	private static final String MENSAJE_VALIDACION = "Error en la solicitud";
 	private static final String MENSAJE_NOT_FOUND = "Recurso no encontrado";
+	private static final String MENSAJE_CONFLICTO = "Conflicto de asignacion";
 	private static final String MENSAJE_INTERNAL = "Error interno del servidor";
     
 	@ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
@@ -30,6 +32,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(NotFoundException.class)
 	public ResponseEntity<ErrorResponse> manejarNotFound(NotFoundException ex) {
 		return build(HttpStatus.NOT_FOUND, ESTADO_NOT_FOUND, MENSAJE_NOT_FOUND, ex.getMessage());
+	}
+
+	@ExceptionHandler(AsignacionActivaConflictException.class)
+	public ResponseEntity<ErrorResponse> manejarAsignacionActiva(AsignacionActivaConflictException ex) {
+		return build(HttpStatus.CONFLICT, ESTADO_CONFLICTO, MENSAJE_CONFLICTO, ex.getMessage());
 	}
     
 	@ExceptionHandler(RuntimeException.class)

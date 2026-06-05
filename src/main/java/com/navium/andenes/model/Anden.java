@@ -34,29 +34,29 @@ public class Anden {
     @Schema(description = "Identificador interno", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id; // identificador interno
 
-    @Column(nullable = false)
+    @Column(name = "zona", nullable = false)
     @Schema(description = "Zona del anden", example = "A")
     private String zona; // A, B, C, DE, etc
 
-    @Column(nullable = false)
+    @Column(name = "numero", nullable = false)
     @Schema(description = "Numero del anden dentro de la zona", example = "12")
     private int numero; // 12, 5, 3, etc
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "codigo", nullable = false, unique = true)
     @Schema(description = "Codigo compuesto por zona + numero", example = "A12", accessMode = Schema.AccessMode.READ_ONLY)
     private String codigo; // commpuesto de zona + numero; A12, B4, etc
 
-    @Column(nullable = false)
+    @Column(name = "tipo", nullable = false)
     @Enumerated(EnumType.STRING)
     @Schema(description = "Tipo de anden")
     private TipoAnden tipo;
 
-    @Column(nullable = false)
+    @Column(name = "estado", nullable = false)
     @Enumerated(EnumType.STRING)
     @Schema(description = "Estado operativo del anden")
     private EstadoAnden estado;
 
-    @Column(nullable = true)
+    @Column(name = "sector")
     @Schema(description = "Sector opcional dentro de la zona", example = "Norte")
     private String sector;
     
