@@ -18,7 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * Asignacion representa el historial de {@link Anden}
  */
 @Entity
-@Table(name = "asignaciones")
+@Table(name = "asignaciones", schema = "navium")
 @Getter
 @Setter
 @NoArgsConstructor
