@@ -1,6 +1,7 @@
 services:
   api-andenes:
     image: api-andenes:latest
+    build: .
     container_name: navium_api_andenes
     restart: always
     ports:
