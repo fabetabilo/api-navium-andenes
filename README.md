@@ -19,34 +19,41 @@ Su objetivo es asegurar que el flujo de carga y descarga de contenedores (aquell
 - **Persistencia:** Spring Data JPA + Hibernate
 - **Base de datos:** PostgreSQL
 - **Build:** Maven (incluye Maven Wrapper `mvnw` / `mvnw.cmd`)
-- **Seguridad:** JWT (`jjwt`) + `navium-security-lib`
 - **Documentación API:** OpenAPI 3 + Swagger UI (springdoc)
 - **Utilidades:** Lombok
 
 ### Configuración de entorno de desarrollo
 
-1. **JDK 21** instalado y configurado en `JAVA_HOME`.
-2. **PostgreSQL** corriendo en local.
-3. Credenciales y URL configuradas en `src/main/resources/application-dev.properties` (perfil por defecto).
+#### Entorno local sin Docker
 
-Por defecto el proyecto usa:
+- Por defecto el proyecto utiliza el puerto `8083`
+- **JDK 21** instalado y configurado en `JAVA_HOME`.
+- **PostgreSQL** corriendo en local (ayuda con pgAdmin4).
+- Credenciales y URL configuradas en `src/main/resources/application.properties` (perfil por defecto).
 
-- Perfil: `dev` (`spring.profiles.active=dev`)
-- Puerto: `8080` (`server.port=8080`)
-
-### Ejecución local
-
-Desde la raíz del repositorio:
-
+Ejecuta la aplicacion localmente
 ```bash
-# Windows
 ./mvnw.cmd spring-boot:run
-
-# Linux/Mac
-./mvnw spring-boot:run
 ```
 
-Si necesitas cambiar la base de datos, ajusta `application-dev.properties` (URL/usuario/contraseña). En `dev` el esquema se actualiza automáticamente (`spring.jpa.hibernate.ddl-auto=update`).
+#### Entorno con Docker
+
+Dirigite al directorio del proyecto, y crea un archivo `.env` como `.env.example` especificado en el proyecto.
+
+```bash
+cd navium-ms-andenes/
+```
+
+1. Ejecuta:
+```bash
+./mvnw clean package
+```
+2. Levanta el contenedor. Docker se encarga de ejecutar la creacion de la imagen automaticamente.
+```bash
+docker compose up --build -d
+```
+
+**Nota:** En caso de modificar tras el levantamiento del contenedor, **debes** eliminar el contenedor y luego volver a levantarlo.
 
 ### Documentación de API (Swagger UI)
 
@@ -57,11 +64,3 @@ La documentación de endpoints utiliza **OpenAPI/Swagger UI**.
 
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
-
-### Probar endpoints protegidos (JWT)
-
-Si los endpoints requieren autenticación, en Swagger UI usa el botón **Authorize** y pega el token en formato:
-
-`Bearer <tu_jwt>`
-
-Luego ejecuta las operaciones desde la UI con el header `Authorization` aplicado.
