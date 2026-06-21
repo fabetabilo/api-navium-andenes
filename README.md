@@ -31,24 +31,24 @@ Su objetivo es asegurar que el flujo de carga y descarga de contenedores (aquell
 - **PostgreSQL** corriendo en local (ayuda con pgAdmin4).
 - Credenciales y URL configuradas en `src/main/resources/application.properties` (perfil por defecto).
 
-Ejecuta la aplicacion localmente
+Para compilación ejecuta:
+```bash
+./mvnw clean package
+```
+
+Ejecuta la aplicación localmente
 ```bash
 ./mvnw.cmd spring-boot:run
 ```
 
 #### Entorno con Docker
 
-Dirigite al directorio del proyecto, y crea un archivo `.env` como `.env.example` especificado en el proyecto.
+Dirígete al directorio del proyecto, y crea un archivo `.env` como `.env.example` especificado en el proyecto.
 
 ```bash
 cd navium-ms-andenes/
 ```
-
-1. Ejecuta:
-```bash
-./mvnw clean package
-```
-2. Levanta el contenedor. Docker se encarga de ejecutar la creacion de la imagen automaticamente.
+Levanta el contenedor. Docker se encarga de ejecutar la creación de la imagen (con `Dockerfile`) automáticamente con `--build`.
 ```bash
 docker compose up --build -d
 ```

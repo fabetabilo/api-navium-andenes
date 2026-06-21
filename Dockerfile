@@ -1,8 +1,16 @@
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /app
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline -q
+COPY src ./src
+RUN ./mvnw clean package -DskipTests -q
+
 FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-COPY target/api-andenes-*.jar app.jar
+COPY --from=builder /app/target/api-andenes-*.jar app.jar
 
 EXPOSE 8083
 
