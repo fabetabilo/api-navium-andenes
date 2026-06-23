@@ -7,8 +7,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.navium.andenes.dto.AndenInformacion;
+import com.navium.andenes.exception.AsignacionActivaConflictException;
 import com.navium.andenes.exception.NotFoundException;
 import com.navium.andenes.model.Anden;
 import com.navium.andenes.model.Asignacion;
@@ -194,6 +196,10 @@ public class AndenService {
         
         Anden anden = andenRepository.findById(andenId)
                                      .orElseThrow(() -> new NotFoundException("Anden no encontrado"));
+
+        if (asignacionRepository.findByAndenIdAndHoraFinIsNull(andenId).isPresent()) {
+            throw new AsignacionActivaConflictException("Ya existe una asignacion activa para el anden: " + andenId);
+        }
         
         if (anden.getEstado() != EstadoAnden.DISPONIBLE) {
             throw new IllegalStateException("Anden no disponible");
@@ -209,7 +215,11 @@ public class AndenService {
         asignacion.setContenedorId(contenedorId);
         asignacion.setHoraInicio(LocalDateTime.now());
         
-        return asignacionRepository.save(asignacion);
+        try {
+            return asignacionRepository.save(asignacion);
+        } catch (DataIntegrityViolationException ex) {
+            throw new AsignacionActivaConflictException("Ya existe una asignacion activa para el anden: " + andenId);
+        }
     }
     
     /**

@@ -1,0 +1,16 @@
+services:
+  api-andenes:
+    image: api-andenes:latest
+    build: .
+    container_name: navium_api_andenes
+    restart: always
+    ports:
+      # host : contenedor
+      - "${API_PORT}:8083"
+    environment:
+      # spring lee al arrancar:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
