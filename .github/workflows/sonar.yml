@@ -40,4 +40,5 @@ jobs:
           ./mvnw -B clean verify sonar:sonar \
             -Dsonar.projectKey=navium-ms-andenes \
             -Dsonar.projectName=navium-ms-andenes \
+            -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
