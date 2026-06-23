@@ -1,0 +1,90 @@
+name: CI/CD api-andenes
+
+on:
+  push:
+    branches: [ "deploy" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout de codigo
+        uses: actions/checkout@v4
+
+      - name: Config JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Cache Maven
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+
+      - name: Build con Maven
+        run: ./mvnw clean package -DskipTests -q
+
+      - name: Login a Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build y push imagen
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-andenes:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy en EC2 owo
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            mkdir -p ~/api-andenes
+            cd ~/api-andenes
+
+            # Crear .env
+            echo "API_PORT=8083"                           > .env
+            echo "DB_HOST=${{ secrets.DB_HOST }}"         >> .env
+            echo "DB_PORT=${{ secrets.DB_PORT }}"         >> .env
+            echo "DB_NAME=${{ secrets.DB_NAME }}"         >> .env
+            echo "DB_USER=${{ secrets.DB_USER }}"         >> .env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+
+            # trae imagen nueva (latest)
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/api-andenes:latest
+
+            # limpia contenedor anterior
+            sudo docker compose down || true
+            sudo docker rm -f api-andenes || true
+
+            # Crear docker-compose.yml
+            cat <<EOF > docker-compose.yml
+            services:
+              api-andenes:
+                image: ${{ secrets.DOCKER_USERNAME }}/api-andenes:latest
+                container_name: api-andenes
+                ports:
+                  - "8083:8083"
+                env_file:
+                  - .env
+                restart: always
+            EOF
+
+            sudo docker compose up -d
+
+            # y limpia imagenes viejas
+            sudo docker image prune -f
