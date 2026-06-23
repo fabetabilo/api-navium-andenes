@@ -27,7 +27,7 @@ jobs:
       - name: Build con Maven
         run: chmod +x ./mvnw && ./mvnw clean package -DskipTests -q
 
-      - name: Login a Docker Hub
+      - name: login a Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
