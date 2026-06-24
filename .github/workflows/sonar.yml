@@ -41,4 +41,5 @@ jobs:
             -Dsonar.projectKey=navium-ms-andenes \
             -Dsonar.projectName=navium-ms-andenes \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
+            -Dsonar.branch.name=${{ github.ref_name }} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
