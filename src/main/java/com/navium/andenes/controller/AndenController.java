@@ -25,7 +25,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v0/andenes")
 @RequiredArgsConstructor
 @Tag(name = "Andenes", description = "Operaciones CRUD y de negocio sobre andenes")
-@SecurityRequirement(name = "bearerAuth")
 public class AndenController {
     
     private final AndenService andenService;
@@ -259,6 +257,8 @@ public class AndenController {
         @ApiResponse(responseCode = "200", description = "Asignacion creada",
             content = @Content(schema = @Schema(implementation = Asignacion.class))),
         @ApiResponse(responseCode = "400", description = "Solicitud invalida",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "409", description = "Conflicto: ya existe asignacion activa",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "404", description = "Anden no encontrado",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
