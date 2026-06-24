@@ -2,9 +2,7 @@ name: Analisis SonarQube - navium-ms-andenes
 
 on:
   push:
-    branches: [ "deploy" ]
-  pull_request:
-    branches: [ "deploy" ]
+    branches: [ "main" ]
 
 jobs:
   sonar-analysis:
@@ -31,7 +29,7 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Analisis con SonarQube en rama deploy
+      - name: Analisis con SonarQube en rama main (no deploy)
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -41,5 +39,4 @@ jobs:
             -Dsonar.projectKey=navium-ms-andenes \
             -Dsonar.projectName=navium-ms-andenes \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }} \
-            -Dsonar.branch.name=${{ github.ref_name }} \
             -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
